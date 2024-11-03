@@ -48,7 +48,7 @@
 
         async function fetchWebtoonTitle() {
             try {
-                const url = `https://cors-anywhere.herokuapp.com/https://comic.naver.com/api/article/list/info?titleId=${titleId}`;
+                const url = `https://comic.naver.com/api/article/list/info?titleId=${titleId}`;
                 const response = await fetch(url);
                 const data = await response.json();
                 const webtoonTitle = data.titleName || "웹툰 제목 없음";
@@ -63,7 +63,7 @@
         // 필요한 페이지 번호 계산
         const page = Math.ceil(no / 20); // no가 1~20이면 1페이지, 21~40이면 2페이지 등
 
-        const url = `https://cors-anywhere.herokuapp.com/https://comic.naver.com/api/article/list?titleId=${titleId}&page=${page}&sort=ASC`;
+        const url = `https://comic.naver.com/api/article/list?titleId=${titleId}&page=${page}&sort=ASC`;
         const response = await fetch(url);
         const data = await response.json();
 
@@ -80,7 +80,7 @@
 
 
         async function fetchImages() {
-            const url = `https://cors-anywhere.herokuapp.com/https://comic.naver.com/webtoon/detail?titleId=${titleId}&no=${no}`;
+            const url = `https://comic.naver.com/webtoon/detail?titleId=${titleId}&no=${no}`;
             try {
                 const response = await fetch(url);
                 const html = await response.text();

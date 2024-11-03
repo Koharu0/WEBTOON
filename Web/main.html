@@ -52,7 +52,7 @@
         // 검색 실행 함수
         function performSearch() {
             const keyword = document.getElementById('textBox').value;
-            const url = `https://cors-anywhere.herokuapp.com/https://comic.naver.com/api/search/all?keyword=${encodeURIComponent(keyword)}`;
+            const url = `https://comic.naver.com/api/search/all?keyword=${encodeURIComponent(keyword)}`;
             
             fetch(url)
                 .then(response => {
@@ -113,7 +113,7 @@
 
         // 요일별 인기 웹툰 표시 함수
         function fetchDayWebtoons() {
-            const url = `https://cors-anywhere.herokuapp.com/https://comic.naver.com/api/webtoon/titlelist/weekday?order=user`;
+            const url = `https://comic.naver.com/api/webtoon/titlelist/weekday?order=user`;
             
             fetch(url)
                 .then(response => {

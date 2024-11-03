@@ -112,7 +112,7 @@
 
         async function fetchWebtoonTitle() {
             try {
-                const titleUrl = `https://cors-anywhere.herokuapp.com/https://comic.naver.com/api/article/list/info?titleId=${titleId}`;
+                const titleUrl = `https://comic.naver.com/api/article/list/info?titleId=${titleId}`;
                 const response = await fetch(titleUrl);
                 const data = await response.json();
                 const titleName = data.titleName;
@@ -133,7 +133,7 @@
             if (loading) return;
             loading = true;
 
-            const url = `https://cors-anywhere.herokuapp.com/https://comic.naver.com/api/article/list?titleId=${titleId}&page=${page}&sort=${sort}`;
+            const url = `https://comic.naver.com/api/article/list?titleId=${titleId}&page=${page}&sort=${sort}`;
             
             fetch(url)
                 .then(response => {
