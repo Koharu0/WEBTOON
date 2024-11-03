@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>웹툰 검색</title>
+    <link rel="stylesheet" type="text/css" href="main_styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>웹툰 검색</h1>
+        <div class="search-box">
+            <input type="text" id="textBox" placeholder="웹툰 제목을 입력하세요">
+            <button id="fetchButton">검색</button>
+        </div>
+
+        <!-- 요일 버튼들 -->
+        <div class="day-buttons">
+            <button class="day-button" data-day="MONDAY">월요일</button>
+            <button class="day-button" data-day="TUESDAY">화요일</button>
+            <button class="day-button" data-day="WEDNESDAY">수요일</button>
+            <button class="day-button" data-day="THURSDAY">목요일</button>
+            <button class="day-button" data-day="FRIDAY">금요일</button>
+            <button class="day-button" data-day="SATURDAY">토요일</button>
+            <button class="day-button" data-day="SUNDAY">일요일</button>
+        </div>
+
+        <div id="result" class="webtoon-grid"></div>
+        <p id="noResults" style="display: none;">검색 결과가 없습니다.</p>
+    </div>
+
+    <script>
+        let webtoonData = {};
+        let selectedDay;
+
+        // 한국의 현재 요일 계산
+        function getTodayInKorea() {
+            const now = new Date();
+            const koreaTimeOffset = 9 * 60 * 60 * 1000;
+            const koreaNow = new Date(now.getTime() + koreaTimeOffset);
+            const dayOfWeek = koreaNow.getUTCDay();
+            return ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"][dayOfWeek];
+        }
+
+        // 페이지 로드 시 오늘의 요일로 기본 설정
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = getTodayInKorea();
+            selectedDay = today;
+            document.querySelector(`.day-button[data-day="${today}"]`).classList.add('active');
+            fetchDayWebtoons();
+        });
+
+        // 검색 실행 함수
+        function performSearch() {
+            const keyword = document.getElementById('textBox').value;
+            const url = `https://cors-anywhere.herokuapp.com/https://comic.naver.com/api/search/all?keyword=${encodeURIComponent(keyword)}`;
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('네트워크 응답이 좋지 않습니다.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const webtoonResults = data.searchWebtoonResult.searchViewList;
+                    const resultElement = document.getElementById('result');
+                    resultElement.innerHTML = '';
+
+                    if (webtoonResults.length === 0) {
+                        document.getElementById('noResults').style.display = 'block';
+                    } else {
+                        document.getElementById('noResults').style.display = 'none';
+                        webtoonResults.forEach(webtoon => {
+                            const listItem = document.createElement('div');
+                            listItem.className = 'webtoon-item';
+                            const titleClass = webtoon.adult ? 'adult-title' : 'webtoon-title';
+                            const adultIcon = webtoon.adult ? `<img src="../resources/19.png" alt="성인 아이콘" class="adult-icon">` : '';
+                            listItem.innerHTML = `
+                                <div class="image-container">
+                                    ${adultIcon}
+                                    <img src="${webtoon.thumbnailUrl}" alt="${webtoon.titleName}">
+                                </div>
+                                <p class="${titleClass}">${webtoon.titleName}</p>
+                            `;
+
+                            // 클릭 이벤트 추가
+                            listItem.onclick = () => {
+                                if (webtoon.adult) {
+                                    alert('성인 웹툰은 이용이 불가능합니다.');
+                                } else {
+                                    window.location.href = `episode.html?titleId=${webtoon.titleId}`;
+                                }
+                            };
+
+                            resultElement.appendChild(listItem);
+                        });
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('result').textContent = '오류: ' + error.message;
+                });
+        }
+
+        // 검색 버튼 클릭 시 검색 실행
+        document.getElementById('fetchButton').onclick = performSearch;
+
+        // Enter 키를 눌렀을 때도 검색 실행
+        document.getElementById('textBox').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // 요일별 인기 웹툰 표시 함수
+        function fetchDayWebtoons() {
+            const url = `https://cors-anywhere.herokuapp.com/https://comic.naver.com/api/webtoon/titlelist/weekday?order=user`;
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('네트워크 응답이 좋지 않습니다.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    webtoonData = data.titleListMap;
+                    displayWebtoonsForDay(selectedDay);
+                })
+                .catch(error => {
+                    console.error('요일별 웹툰 데이터를 가져오는 중 오류 발생:', error);
+                });
+        }
+
+        // 특정 요일의 웹툰을 화면에 표시하는 함수
+        function displayWebtoonsForDay(day) {
+            selectedDay = day;
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = '';
+
+            const dayWebtoons = webtoonData[day];
+            if (dayWebtoons && dayWebtoons.length > 0) {
+                dayWebtoons.forEach(webtoon => {
+                    const listItem = document.createElement('div');
+                    listItem.className = 'webtoon-item';
+                    const titleClass = webtoon.adult ? 'adult-title' : 'webtoon-title';
+                    const adultIcon = webtoon.adult ? `<img src="../resources/19.png" alt="성인 아이콘" class="adult-icon">` : '';
+                    listItem.innerHTML = `
+                        <div class="image-container">
+                            ${adultIcon}
+                            <img src="${webtoon.thumbnailUrl}" alt="${webtoon.titleName}">
+                        </div>
+                        <p class="${titleClass}">${webtoon.titleName}</p>
+                    `;
+
+                    // 클릭 이벤트 추가
+                    listItem.onclick = () => {
+                        if (webtoon.adult) {
+                            alert('성인 웹툰은 이용이 불가능합니다.');
+                        } else {
+                            window.location.href = `episode.html?titleId=${webtoon.titleId}`;
+                        }
+                    };
+
+                    resultElement.appendChild(listItem);
+                });
+            }
+        }
+
+        // 요일 버튼 클릭 이벤트
+        document.querySelectorAll('.day-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.day-button').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                const day = button.getAttribute('data-day');
+                displayWebtoonsForDay(day);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>웹툰 제목 로딩 중...</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        #webtoonTitle {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            cursor: pointer;
+            text-decoration: none; /* 밑줄 제거 */
+            color: inherit; /* 링크 색상 유지 */
+        }
+        #webtoonTitle:hover {
+            color: #00dc64;
+        }
+        .sort-options {
+            font-size: 1em;
+            margin-bottom: 20px;
+            color: #00dc64;
+        }
+        .sort-options span {
+            cursor: pointer;
+            font-weight: bold;
+            padding: 0 5px;
+        }
+        .sort-options span:hover {
+            text-decoration: underline;
+        }
+        .episode-list {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .episode-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .episode-item:hover {
+            transform: translateY(-2px);
+        }
+        .paid-episode {
+            background-color: #FFE6CC;
+        }
+        .episode-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .episode-info {
+            display: flex;
+            flex-direction: column;
+            margin-left: 15px;
+            text-align: left;
+        }
+        .episode-title {
+            font-size: 1em;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+        .episode-details {
+            font-size: 0.9em;
+            color: #666;
+        }
+        #loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.1em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="webtoonTitle">웹툰 제목 로딩 중...</h1>
+        <div class="sort-options">
+            <span id="sortDesc">최신화부터</span> | <span id="sortAsc">1화부터</span>
+        </div>
+        <ul id="episodeList" class="episode-list"></ul>
+        <div id="loading">Loading...</div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const titleId = urlParams.get('titleId');
+        let page = 1;
+        let loading = false;
+        let sort = 'DESC';
+
+        async function fetchWebtoonTitle() {
+            try {
+                const titleUrl = `https://cors-anywhere.herokuapp.com/https://comic.naver.com/api/article/list/info?titleId=${titleId}`;
+                const response = await fetch(titleUrl);
+                const data = await response.json();
+                const titleName = data.titleName;
+
+                document.title = titleName + " - 회차 목록"; 
+                const webtoonTitleElement = document.getElementById('webtoonTitle');
+                webtoonTitleElement.textContent = titleName;
+                
+                webtoonTitleElement.onclick = () => {
+                    window.location.href = 'main.html';
+                };
+            } catch (error) {
+                console.error("웹툰 제목을 가져오는 중 오류 발생:", error);
+            }
+        }
+
+        async function fetchEpisodes() {
+            if (loading) return;
+            loading = true;
+
+            const url = `https://cors-anywhere.herokuapp.com/https://comic.naver.com/api/article/list?titleId=${titleId}&page=${page}&sort=${sort}`;
+            
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('네트워크 응답이 좋지 않습니다.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const episodeList = data.articleList;
+                    const episodeListElement = document.getElementById('episodeList');
+                    const loadingElement = document.getElementById('loading');
+
+                    if (page === 1) {
+                        episodeListElement.innerHTML = '';
+                    }
+
+                    episodeList.forEach(episode => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'episode-item';
+
+                        if (episode.charge) {
+                            listItem.classList.add('paid-episode');
+                        }
+
+                        listItem.innerHTML = `
+                            <img src="${episode.thumbnailUrl}" alt="${episode.subtitle}">
+                            <div class="episode-info">
+                                <p class="episode-title">${episode.subtitle}</p>
+                                <p class="episode-details">⭐ ${episode.starScore.toFixed(2)} | ${episode.serviceDateDescription}</p>
+                            </div>
+                        `;
+
+                        listItem.onclick = () => {
+                            if (episode.charge) {
+                                alert('유료 회차는 이용이 불가능합니다.');
+                            } else {
+                                window.location.href = `view.html?titleId=${titleId}&no=${episode.no}`;
+                            }
+                        };
+
+                        episodeListElement.appendChild(listItem);
+                    });
+
+                    loading = false;
+                    page += 1;
+
+                    if (data.pageInfo && data.pageInfo.totalPages < page) {
+                        loadingElement.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('에피소드를 가져오는 중 오류 발생:', error);
+                });
+        }
+
+        document.getElementById('sortDesc').onclick = () => {
+            if (sort !== 'DESC') {
+                sort = 'DESC';
+                page = 1;
+                document.getElementById('loading').style.display = 'block';
+                fetchEpisodes();
+            }
+        };
+
+        document.getElementById('sortAsc').onclick = () => {
+            if (sort !== 'ASC') {
+                sort = 'ASC';
+                page = 1;
+                document.getElementById('loading').style.display = 'block';
+                fetchEpisodes();
+            }
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                fetchEpisodes();
+            }
+        }, {
+            root: null,
+            rootMargin: '0px',
+            threshold: 1.0
+        });
+
+        observer.observe(document.getElementById('loading'));
+
+        fetchWebtoonTitle();
+        fetchEpisodes();
+    </script>
+</body>
+</html>
