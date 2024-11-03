@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="view_styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <title>웹툰 보기</title>
+    <style>
+        /* Pretendard 폰트 적용 */
+        @font-face {
+            font-family: Pretendard;
+            font-style: normal;
+            font-weight: 400;
+            src: local("Pretendard Regular"), url(https://ssl.pstatic.net/static/comic/font/Pretendard-Regular.woff2) format("woff2"), url(https://ssl.pstatic.net/static/comic/font/Pretendard-Regular.woff) format("woff");
+        }
+        @font-face {
+            font-family: Pretendard;
+            font-style: normal;
+            font-weight: 700;
+            src: local("Pretendard Bold"), url(https://ssl.pstatic.net/static/comic/font/Pretendard-Bold.woff2) format("woff2"), url(https://ssl.pstatic.net/static/comic/font/Pretendard-Bold.woff) format("woff");
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="left">
+            <a href="#" class="back-icon" onclick="goToEpisodePage()"><i class="bi bi-box-arrow-left"></i></a>
+            <span><b id="webtoonTitle">웹툰 제목</b> | <span id="episodeTitle">회차 제목</span></span>
+        </div>
+        <div class="right">
+            <a href="javascript:void(0)" onclick="navigateEpisode('prev')"><i class="bi bi-caret-left"></i><b>이전화</b></a>
+            <span class="separator">|</span>
+            <a href="javascript:void(0)" onclick="navigateEpisode('next')"><b>다음화</b><i class="bi bi-caret-right"></i></a>
+        </div>
+    </div>
+
+    <div class="image-container" id="imageContainer">
+        <!-- 이미지가 이곳에 동적으로 추가됨 -->
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const titleId = urlParams.get('titleId');
+        const no = parseInt(urlParams.get('no'), 10);
+
+        async function fetchWebtoonTitle() {
+            try {
+                const url = `https://cors-anywhere.herokuapp.com/https://comic.naver.com/api/article/list/info?titleId=${titleId}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                const webtoonTitle = data.titleName || "웹툰 제목 없음";
+                document.getElementById('webtoonTitle').textContent = webtoonTitle;
+            } catch (error) {
+                console.error("웹툰 제목을 가져오는 중 오류 발생:", error);
+            }
+        }
+
+        async function fetchEpisodeInfo() {
+    try {
+        // 필요한 페이지 번호 계산
+        const page = Math.ceil(no / 20); // no가 1~20이면 1페이지, 21~40이면 2페이지 등
+
+        const url = `https://cors-anywhere.herokuapp.com/https://comic.naver.com/api/article/list?titleId=${titleId}&page=${page}&sort=ASC`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // 해당 회차 정보 찾기
+        const episode = data.articleList.find(ep => ep.no === no);
+        const episodeTitle = episode ? episode.subtitle : "회차 제목 없음";
+
+        // 에피소드 제목 표시
+        document.getElementById('episodeTitle').textContent = episodeTitle;
+    } catch (error) {
+        console.error("에피소드 정보를 가져오는 중 오류 발생:", error);
+    }
+}
+
+
+        async function fetchImages() {
+            const url = `https://cors-anywhere.herokuapp.com/https://comic.naver.com/webtoon/detail?titleId=${titleId}&no=${no}`;
+            try {
+                const response = await fetch(url);
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const comicViewArea = doc.querySelector('#comic_view_area');
+                const imgNodes = comicViewArea.querySelectorAll('img');
+                const imageContainer = document.getElementById('imageContainer');
+                imageContainer.innerHTML = '';
+
+                imgNodes.forEach(imgNode => {
+                    if (!imgNode.src.includes('white')) {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = imgNode.src;
+                        imgElement.alt = "웹툰 이미지";
+                        imageContainer.appendChild(imgElement);
+                    }
+                });
+            } catch (error) {
+                console.error("이미지를 가져오는 중 오류 발생:", error);
+            }
+        }
+
+        function navigateEpisode(direction) {
+            const newNo = direction === 'prev' ? no - 1 : no + 1;
+            if (newNo > 0) {
+                window.location.href = `view.html?titleId=${titleId}&no=${newNo}`;
+            }
+        }
+
+        // episode.html로 이동하는 함수
+        function goToEpisodePage() {
+            window.location.href = `episode.html?titleId=${titleId}`;
+        }
+
+        // Initial setup
+        fetchWebtoonTitle();
+        fetchEpisodeInfo();
+        fetchImages();
+    </script>
+</body>
+</html>

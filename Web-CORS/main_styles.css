@@ -1,0 +1,124 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.container {
+    width: 100%;
+    max-width: 1000px;
+}
+h1 {
+    color: #333;
+    text-align: center;
+}
+.search-box {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+#textBox {
+    width: 70%;
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+#fetchButton {
+    padding: 10px 20px;
+    font-size: 1em;
+    border: none;
+    background-color: #00dc64;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+#fetchButton:hover {
+    background-color: #004628;
+}
+.day-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.day-button {
+    padding: 10px 15px;
+    font-size: 0.9em;
+    border: none;
+    background-color: #00dc64;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+.day-button.active {
+    background-color: #004628;
+    transform: scale(1.1);
+    font-weight: bold;
+}
+.webtoon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+}
+.webtoon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    transition: transform 0.2s;
+}
+.webtoon-item:hover {
+    transform: scale(1.05);
+}
+.image-container {
+    position: relative;
+}
+.image-container img {
+    width: 100%;
+    height: auto;
+    max-width: 120px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+.adult-icon {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 25px !important; /* 아이콘 크기를 확실히 조정 */
+    height: 25px !important;
+    object-fit: contain; /* 아이콘의 왜곡 방지 */
+}
+.webtoon-title {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+    word-break: break-word;
+}
+.adult-title {
+    font-size: 0.9em;
+    font-weight: 900;
+    margin: 0;
+    word-break: break-word;
+    color: #E74C3C;
+}
+#noResults {
+    color: #888;
+    font-size: 1em;
+    text-align: center;
+    margin-top: 20px;
+}
