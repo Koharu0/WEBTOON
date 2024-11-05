@@ -92,7 +92,7 @@
                 imageContainer.innerHTML = '';
 
                 imgNodes.forEach(imgNode => {
-                    if (!imgNode.src.includes('white')) {
+                    if (!imgNode.src.includes('white') && !imgNode.src.includes('banner')) {
                         const imgElement = document.createElement('img');
                         imgElement.src = imgNode.src;
                         imgElement.alt = "웹툰 이미지";
