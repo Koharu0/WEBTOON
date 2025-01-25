@@ -99,7 +99,7 @@
 }
 
 
-        async function fetchImages() {
+       async function fetchImages() {
             const url = `https://comic.naver.com/webtoon/detail?titleId=${titleId}&no=${no}`;
             try {
                 const response = await fetch(url);
@@ -124,6 +124,49 @@
             }
         }
 
+        async function fetchImagesM() {
+    const url = `https://comic.naver.com/webtoon/detail?titleId=${titleId}&no=${no}`;
+
+    fetch(url)
+    .then(response => response.text())
+    .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const ctElement = doc.querySelector('#ct');
+        const ulElement = ctElement.querySelector('ul');
+        const liElements = ulElement.querySelectorAll('li');
+
+        const imageUrls = [];
+        liElements.forEach(li => {
+        const pElement = li.querySelector('p');
+
+      if (pElement) {
+        const imgElement = pElement.querySelector('img');
+        if (imgElement) {
+          const finalImageUrl = imgElement.hasAttribute('data-src') ? imgElement.getAttribute('data-src') : imgElement.getAttribute('src');
+          imageUrls.push(finalImageUrl);
+        }
+      }
+    });
+
+    //console.log("이미지 URL 목록:", imageUrls);
+
+    // 이미지 표시 부분
+    const imageContainer = document.getElementById('imageContainer');
+    imageContainer.innerHTML = ''; // 기존 이미지 제거
+
+    imageUrls.forEach(imageUrl => {
+      const imgElement = document.createElement('img');
+      imgElement.src = imageUrl;
+      imgElement.alt = "웹툰 이미지";
+      imageContainer.appendChild(imgElement);
+    });
+  })
+  .catch(error => {
+    console.error('Error fetching or parsing HTML:', error);
+  });
+        }
+
         function navigateEpisode(direction) {
             const newNo = direction === 'prev' ? no - 1 : no + 1;
             if (newNo > 0) {
@@ -139,7 +182,15 @@
         // Initial setup
         fetchWebtoonTitle();
         fetchEpisodeInfo();
-        fetchImages();
+
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      // Mobile
+      fetchImagesM();
+    } else {
+      // Desktop
+      fetchImages();
+    }
+
     </script>
 </body>
 </html>
