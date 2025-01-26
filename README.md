@@ -22,3 +22,5 @@
 ## 구현체 상세 설명
 Web: 현재 CORS 문제를 해결하지 않은 상태입니다. 현재 수정 계획이 없으며, Web-CORS 구현체보다 속도가 빠릅니다.<br><br>
 Web-CORS: CORS 문제를 임시적으로 Proxy 서버를 사용해 해결한 구현체입니다. Web 구현체보다 속도가 느리며, 사용 전 [이곳](https://cors-anywhere.herokuapp.com/corsdemo)에서 ``Request temporary access to the demo server`` 버튼을 누르고 사용해야 합니다.
+
+수정할 부분: iPad 제외, 모바일 컷툰 수정
